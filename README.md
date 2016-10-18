@@ -8,7 +8,11 @@ Interface and implementations for fetching MediaWiki page content.
 
 ## Release notes
 
-### 1.0.0 (dev)
+### 1.0.0 (2016-10-18)
 
-* Initial release
+* Initial release with
+	* `PageRetriever` interface
+	* `ApiBasedPageRetriever` implementation that uses the MediaWiki API
+	* `LocalFilePageRetriever` implementation that uses (typically local) files
+	* `CachingPageRetriever` implementation that is a caching decorator
 
