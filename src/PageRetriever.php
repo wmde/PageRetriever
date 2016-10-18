@@ -12,17 +12,13 @@ namespace WMDE\PageRetriever;
  */
 interface PageRetriever {
 
-	const MODE_RAW = 'raw';
-	const MODE_RENDERED = 'render';
-
 	/**
 	 * Should return an empty string on error.
 	 *
 	 * @param string $pageName
-	 * @param string $fetchMode TODO: it seems like the only mode ever used is PageRetriever::MODE_RAW
 	 *
 	 * @return string
 	 */
-	public function fetchPage( string $pageName, string $fetchMode ): string;
+	public function fetchPage( string $pageName ): string;
 
 }

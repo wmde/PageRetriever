@@ -18,7 +18,10 @@ use Psr\Log\LoggerInterface;
  */
 class ApiBasedPageRetriever implements PageRetriever {
 
-	const MW_COMMENT_PATTERNS = [
+	/* public */ const MODE_RAW = 'raw';
+	/* public */ const MODE_RENDERED = 'render';
+
+	/* private */ const MW_COMMENT_PATTERNS = [
 		'/<!--\s*NewPP limit report.*?-->/s' => '',
 		'/<!--\s*Transclusion expansion time report.*?-->/s' => '',
 		'/<!--\s*Saved in parser cache with key.*?-->/s' => ''
@@ -28,33 +31,45 @@ class ApiBasedPageRetriever implements PageRetriever {
 	private $apiUser;
 	private $logger;
 	private $pageTitlePrefix;
+	private $retrievalMode;
 
-	public function __construct( MediawikiApi $api, ApiUser $apiUser, LoggerInterface $logger, string $pageTitlePrefix ) {
+	public function __construct( MediawikiApi $api, ApiUser $apiUser, LoggerInterface $logger,
+		string $pageTitlePrefix, string $retrievalMode = self::MODE_RENDERED ) {
+
 		$this->api = $api;
 		$this->apiUser = $apiUser;
 		$this->logger = $logger;
 		$this->pageTitlePrefix = $pageTitlePrefix;
+
+		if ( !in_array( $retrievalMode, [ self::MODE_RENDERED, self::MODE_RAW ] ) ) {
+			throw new \InvalidArgumentException( 'Invalid value for $retrievalMode' );
+		}
+
+		$this->retrievalMode = $retrievalMode;
 	}
 
 	/**
 	 * @param string $pageTitle
-	 * @param string $action
 	 * @throws \RuntimeException if the value of $action is not supported
 	 * @return string
 	 */
-	public function fetchPage( string $pageTitle, string $action = PageRetriever::MODE_RENDERED ): string {
+	public function fetchPage( string $pageTitle ): string {
 		$normalizedPageName = $this->normalizePageName( $this->getPrefixedPageTitle( $pageTitle ) );
 
-		$this->logger->debug( __METHOD__ . ': pageTitle', [ $normalizedPageName ] );
+		$this->logger->info( 'Fetching page via MW API', [ 'normalizedPageName' => $normalizedPageName ] );
 
 		if ( !$this->api->isLoggedin() ) {
 			$this->doLogin();
 		}
 
-		$content = $this->retrieveContent( $normalizedPageName, $action );
+		$content = $this->retrieveContent( $normalizedPageName );
 
-		if ( $content === false || $content === null ) {
-			$this->logger->debug( __METHOD__ . ': fail, got non-value', [ $content ] );
+		if ( $content === false ) {
+			$this->logger->notice(
+				'Failed fetching page via MW API',
+				[ 'normalizedPageName' => $normalizedPageName ]
+			);
+
 			return '';
 		}
 
@@ -67,17 +82,16 @@ class ApiBasedPageRetriever implements PageRetriever {
 
 	/**
 	 * @param string $pageTitle
-	 * @param string $action
 	 * @return string|bool retrieved content or false on error
 	 */
-	private function retrieveContent( string $pageTitle, string $action ) {
-		switch ( $action ) {
-			case 'raw':
+	private function retrieveContent( string $pageTitle ) {
+		switch ( $this->retrievalMode ) {
+			case self::MODE_RAW:
 				return $this->retrieveWikiText( $pageTitle );
-			case 'render':
+			case self::MODE_RENDERED:
 				return $this->retrieveRenderedPage( $pageTitle );
 			default:
-				throw new \RuntimeException( 'Action "' . $action . '" not supported' );
+				throw new \LogicException( 'Action "' . $this->retrievalMode . '" not supported' );
 				break;
 		}
 	}
@@ -97,7 +111,8 @@ class ApiBasedPageRetriever implements PageRetriever {
 		if ( !empty( $response['parse']['text']['*'] ) ) {
 			return $this->cleanupWikiHtml( $response['parse']['text']['*'] );
 		}
-		return null;
+
+		return false;
 	}
 
 	private function retrieveWikiText( $pageTitle ) {
@@ -116,6 +131,7 @@ class ApiBasedPageRetriever implements PageRetriever {
 		if ( !is_array( $response['query']['pages'] ) ) {
 			return false;
 		}
+
 		$page = reset( $response['query']['pages'] );
 
 		return $page['revisions'][0]['*'];

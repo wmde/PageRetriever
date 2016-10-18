@@ -22,14 +22,18 @@ class LocalFilePageRetriever implements PageRetriever {
 		$this->fetcher = $fetcher;
 	}
 
-	public function fetchPage( string $filename, string $fetchMode = '' ): string {
-		$this->logger->debug( __METHOD__ . ': wiki_page', [ $filename ] );
+	public function fetchPage( string $pageName ): string {
+		$this->logger->info( 'Fetching local page', [ 'pageName' => $pageName ] );
 
 		try {
-			$content = $this->fetcher->fetchFile( $filename );
+			$content = $this->fetcher->fetchFile( $pageName );
 		}
 		catch ( FileFetchingException $ex ) {
-			$this->logger->debug( __METHOD__, [ $ex->getMessage() ] );
+			$this->logger->notice(
+				'Failed fetching local page',
+				[ 'pageName' => $pageName, 'exception' => $ex->getMessage() ]
+			);
+
 			return '';
 		}
 

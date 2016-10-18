@@ -30,7 +30,7 @@ class CachingPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertSame(
 			self::LIVE_CONTENT,
-			$cachingRetriever->fetchPage( self::PAGE_NAME, PageRetriever::MODE_RAW )
+			$cachingRetriever->fetchPage( self::PAGE_NAME )
 		);
 	}
 
@@ -63,7 +63,7 @@ class CachingPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 			$cache
 		);
 
-		$cachingRetriever->fetchPage( self::PAGE_NAME, PageRetriever::MODE_RAW );
+		$cachingRetriever->fetchPage( self::PAGE_NAME );
 
 		$this->assertSame(
 			self::LIVE_CONTENT,
@@ -82,7 +82,7 @@ class CachingPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertSame(
 			self::CACHED_CONTENT,
-			$cachingRetriever->fetchPage( self::PAGE_NAME, PageRetriever::MODE_RAW )
+			$cachingRetriever->fetchPage( self::PAGE_NAME )
 		);
 	}
 
