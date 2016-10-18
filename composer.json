@@ -8,13 +8,13 @@
 		"addwiki/mediawiki-api-base": "~2.1",
 		"jeroen/file-fetcher": "~3.1",
 		"psr/log": "~1.0",
-		"doctrine/cache": "~1.6",
-		"wmde/psr-log-test-doubles": "dev-master"
+		"doctrine/cache": "~1.6"
 	},
 	"require-dev": {
 		"squizlabs/php_codesniffer": "~2.5",
 		"mediawiki/mediawiki-codesniffer": "~0.6.0",
-		"ockcyp/covers-validator": "~0.4"
+		"ockcyp/covers-validator": "~0.4",
+		"wmde/psr-log-test-doubles": "~1.0"
 	},
 	"autoload": {
 		"psr-4": {
