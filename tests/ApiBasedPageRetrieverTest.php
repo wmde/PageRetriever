@@ -143,4 +143,17 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 		$this->pageRetriever->fetchPage( 'Lollipops' );
 		$this->pageRetriever->fetchPage( 'Rainbows' );
 	}
+
+	public function testWhenConstructingWithInvalidFetchMode_exceptionIsThrown() {
+		$this->expectException( \InvalidArgumentException::class );
+
+		$this->pageRetriever = new ApiBasedPageRetriever(
+			$this->api,
+			$this->apiUser,
+			$this->logger,
+			self::PAGE_PREFIX,
+			'~=[,,_,,]:3'
+		);
+	}
+
 }
