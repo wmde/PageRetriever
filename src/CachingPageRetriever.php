@@ -20,12 +20,12 @@ class CachingPageRetriever implements PageRetriever {
 		$this->cache = $cache;
 	}
 
-	public function fetchPage( string $pageName, string $fetchMode ): string {
+	public function fetchPage( string $pageName ): string {
 		if ( $this->cache->contains( $pageName ) ) {
 			return $this->cache->fetch( $pageName );
 		}
 
-		$content = $this->pageRetriever->fetchPage( $pageName, $fetchMode );
+		$content = $this->pageRetriever->fetchPage( $pageName );
 
 		$this->cache->save( $pageName, $content );
 

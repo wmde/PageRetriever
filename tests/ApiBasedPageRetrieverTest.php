@@ -8,7 +8,6 @@ use Mediawiki\Api\MediawikiApi;
 use Mediawiki\Api\SimpleRequest;
 use Mediawiki\Api\UsageException;
 use WMDE\PageRetriever\ApiBasedPageRetriever;
-use WMDE\PageRetriever\PageRetriever;
 use WMDE\PsrLogTestDoubles\LoggerSpy;
 
 /**
@@ -22,7 +21,7 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 	const PAGE_PREFIX = 'Web:SpendenseiteTestSkin/';
 
 	/**
-	 * @var \PHPUnit_Framework_MockObject_MockObject
+	 * @var \PHPUnit_Framework_MockObject_MockObject|MediawikiApi
 	 */
 	private $api;
 	private $apiUser;
@@ -65,7 +64,16 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 
 		$expectedContent = "Nyan\nGarfield\nFelix da House";
 		$pageName = 'Web:Spendenseite-HK2013/test/No Cats';
-		$this->assertSame( $expectedContent, $this->pageRetriever->fetchPage( $pageName, PageRetriever::MODE_RAW ) );
+
+		$this->pageRetriever = new ApiBasedPageRetriever(
+			$this->api,
+			$this->apiUser,
+			$this->logger,
+			self::PAGE_PREFIX,
+			ApiBasedPageRetriever::MODE_RAW
+		);
+
+		$this->assertSame( $expectedContent, $this->pageRetriever->fetchPage( $pageName ) );
 	}
 
 	/**
@@ -77,7 +85,7 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 
 		$this->pageRetriever->fetchPage( 'test page' );
 
-		$expectedLogMessage = 'WMDE\PageRetriever\ApiBasedPageRetriever::fetchPage: fail, got non-value';
+		$expectedLogMessage = 'Failed fetching page via MW API';
 		$this->assertCalledWithMessage( $expectedLogMessage );
 	}
 
@@ -100,7 +108,7 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 
 		$this->pageRetriever->fetchPage( 'test page' );
 
-		$expectedLogMessage = 'WMDE\PageRetriever\ApiBasedPageRetriever::fetchPage: fail, got non-value';
+		$expectedLogMessage = 'Failed fetching page via MW API';
 		$this->assertCalledWithMessage( $expectedLogMessage );
 	}
 
@@ -135,4 +143,17 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 		$this->pageRetriever->fetchPage( 'Lollipops' );
 		$this->pageRetriever->fetchPage( 'Rainbows' );
 	}
+
+	public function testWhenConstructingWithInvalidFetchMode_exceptionIsThrown() {
+		$this->expectException( \InvalidArgumentException::class );
+
+		$this->pageRetriever = new ApiBasedPageRetriever(
+			$this->api,
+			$this->apiUser,
+			$this->logger,
+			self::PAGE_PREFIX,
+			'~=[,,_,,]:3'
+		);
+	}
+
 }
