@@ -19,6 +19,7 @@ use Psr\Log\LoggerInterface;
 class ApiBasedPageRetriever implements PageRetriever {
 
 	/* public */ const MODE_RAW = 'raw';
+	/* public */ const MODE_RAW_EXPANDED = 'raw_expanded';
 	/* public */ const MODE_RENDERED = 'render';
 
 	/* private */ const MW_COMMENT_PATTERNS = [
@@ -26,6 +27,7 @@ class ApiBasedPageRetriever implements PageRetriever {
 		'/<!--\s*Transclusion expansion time report.*?-->/s' => '',
 		'/<!--\s*Saved in parser cache with key.*?-->/s' => ''
 	];
+	/* private */ const EXPAND_TEMPLATES = true;
 
 	private $api;
 	private $apiUser;
@@ -41,7 +43,7 @@ class ApiBasedPageRetriever implements PageRetriever {
 		$this->logger = $logger;
 		$this->pageTitlePrefix = $pageTitlePrefix;
 
-		if ( !in_array( $retrievalMode, [ self::MODE_RENDERED, self::MODE_RAW ] ) ) {
+		if ( !in_array( $retrievalMode, [ self::MODE_RENDERED, self::MODE_RAW, self::MODE_RAW_EXPANDED ] ) ) {
 			throw new \InvalidArgumentException( 'Invalid value for $retrievalMode' );
 		}
 
@@ -88,6 +90,8 @@ class ApiBasedPageRetriever implements PageRetriever {
 		switch ( $this->retrievalMode ) {
 			case self::MODE_RAW:
 				return $this->retrieveWikiText( $pageTitle );
+			case self::MODE_RAW_EXPANDED:
+				return $this->retrieveWikiText( $pageTitle, self::EXPAND_TEMPLATES );
 			case self::MODE_RENDERED:
 				return $this->retrieveRenderedPage( $pageTitle );
 			default:
@@ -115,12 +119,16 @@ class ApiBasedPageRetriever implements PageRetriever {
 		return false;
 	}
 
-	private function retrieveWikiText( $pageTitle ) {
+	private function retrieveWikiText( $pageTitle, $expandTemplates = false ) {
 		$params = [
 			'titles' => $pageTitle,
 			'prop' => 'revisions',
 			'rvprop' => 'content'
 		];
+
+		if ( $expandTemplates === true ) {
+			$params['rvexpandtemplates'] = '1';
+		}
 
 		try {
 			$response = $this->api->postRequest( new SimpleRequest( 'query', $params ) );
