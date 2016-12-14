@@ -1,0 +1,18 @@
+{
+	"query": {
+		"pages": {
+			"1292": {
+				"pageid": 1292,
+				"ns": 120,
+				"title": "Web:Spendenseite-HK2013/test/Raw text expanded templates",
+				"revisions": [
+					{
+						"contentformat": "text/x-wiki",
+						"contentmodel": "wikitext",
+						"*": "No curly brackets here."
+					}
+				]
+			}
+		}
+	}
+}

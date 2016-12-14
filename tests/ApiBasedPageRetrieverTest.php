@@ -156,4 +156,32 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testRetrieverReturnsApiResultInRawExpandedMode() {
+		$pageName = 'Raw_text';
+
+		$this->api->method( 'isLoggedin' )->willReturn( true );
+		$this->api->method( 'postRequest' )
+			->with( new SimpleRequest( 'query', $this->newParamsForExpandedTemplates( $pageName ) ) )
+			->willReturn( $this->getJsonTestData( 'mwApiRawExpanded.json' ) );
+
+		$this->pageRetriever = new ApiBasedPageRetriever(
+			$this->api,
+			$this->apiUser,
+			$this->logger,
+			self::PAGE_PREFIX,
+			ApiBasedPageRetriever::MODE_RAW_EXPANDED
+		);
+
+		$this->assertSame( 'No curly brackets here.', $this->pageRetriever->fetchPage( $pageName ) );
+	}
+
+	private function newParamsForExpandedTemplates( $pageTitle ) {
+		return [
+			'titles' => self::PAGE_PREFIX . $pageTitle,
+			'prop' => 'revisions',
+			'rvprop' => 'content',
+			'rvexpandtemplates' => '1'
+		];
+	}
+
 }
