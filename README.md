@@ -9,7 +9,8 @@ Interface and implementations for fetching MediaWiki page content.
 ## Release notes
 
 ### 1.1.0 (2016-12-14)
-* Add `MODE_RAW_EXPANDED` mode to `ApiBasedPageRetriever`.
+
+* Added `MODE_RAW_EXPANDED` mode to `ApiBasedPageRetriever`.
 
 ### 1.0.0 (2016-10-18)
 

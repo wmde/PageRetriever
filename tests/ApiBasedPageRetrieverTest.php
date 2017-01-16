@@ -1,5 +1,6 @@
 <?php
 
+declare( strict_types = 1 );
 
 namespace WMDE\PageRetriever\Tests;
 
@@ -92,12 +93,7 @@ class ApiBasedPageRetrieverTest extends \PHPUnit_Framework_TestCase {
 	public function assertCalledWithMessage( string $expectedMessage ) {
 		$this->assertContains(
 			$expectedMessage,
-			array_map(
-				function( array $logCall ) {
-					return $logCall['message'];
-				},
-				$this->logger->getLogCalls()
-			),
+			$this->logger->getLogCalls()->getMessages(),
 			'Should be called with expected message'
 		);
 	}
